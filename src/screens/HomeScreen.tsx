@@ -3,22 +3,27 @@ import {
   SafeAreaView,
   StyleSheet,
   ScrollView,
-  StatusBar,
   Text,
   View,
+  FlatList,
 } from 'react-native';
-import {HeaderHome, NewestBook, PopularBook} from '../components';
+
+import {HeaderHome, BookList, PopularBook} from '../components';
+import VirtualizedView from '../helpers/VirtualizedView';
 import {Colors, padding, semiBoldFont} from '../styles/global';
 
-const Home = () => {
+const Home = ({navigation}: any) => {
   return (
     <>
       <SafeAreaView style={styles.container}>
-        <StatusBar barStyle="dark-content" />
-        <HeaderHome />
+        <View style={styles.header}>
+          <HeaderHome />
+        </View>
+        {/*
         <ScrollView
           contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}>
+          style={styles.scrollView}> */}
+        <VirtualizedView>
           <Text style={styles.headTxt}>Popular Books</Text>
           <ScrollView
             horizontal
@@ -31,9 +36,26 @@ const Home = () => {
           </ScrollView>
           <Text style={styles.headTxt}>Newest</Text>
           <View style={{paddingHorizontal: padding}}>
-            <NewestBook />
+            <FlatList
+              data={[
+                {name: 'tetet', author: 'dggdgd'},
+                {name: 'tetet', author: 'dggdgd'},
+                {name: 'tetet', author: 'dggdgd'},
+                {name: 'tetet', author: 'dggdgd'},
+              ]}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={(props) => (
+                <BookList
+                  {...props}
+                  navigation={navigation}
+                  goto="BookDetails"
+                />
+              )}
+              // numColumns={1}
+              showsVerticalScrollIndicator={false}
+            />
           </View>
-        </ScrollView>
+        </VirtualizedView>
       </SafeAreaView>
     </>
   );
@@ -43,6 +65,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.light,
+  },
+  header: {
+    paddingHorizontal: padding,
+    marginTop: 15,
   },
   scrollView: {
     // backgroundColor: 'red',
