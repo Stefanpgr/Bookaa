@@ -18,7 +18,7 @@ const HeaderBookDetails: React.FunctionComponent<HeaderBookDetailsProps> = ({
 
       <View style={styles.action}>
         <View style={styles.bookmark}>
-          <BookMark width={24} height={24} />
+          <BookMark width={24} height={24} fill="#06070D" />
         </View>
 
         <More />

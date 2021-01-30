@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   View,
   SafeAreaView,
@@ -12,15 +12,22 @@ import {AirbnbRating} from 'react-native-ratings';
 import {Button, HeaderBookDetails} from '../components';
 import {
   Colors,
+  hp,
   mediumFont,
   padding,
   regularFont,
   semiBoldFont,
+  wp,
 } from '../styles/global';
 import FileLine from './../assets/svg/file-text-line.svg';
 import MessageLine from './../assets/svg/message-line.svg';
 
-const BookDetailsScreen = ({navigation}: any) => {
+const BookDetailsScreen = ({route, navigation}) => {
+  const {item} = route.params;
+  // console.log('d', otherParam);
+  // useEffect(() => {
+  //   console.log('d', otherParam);
+  // });
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -36,14 +43,11 @@ const BookDetailsScreen = ({navigation}: any) => {
           }}>
           <View style={{alignItems: 'center'}}>
             <View>
-              <Image
-                source={require('./../assets/img/yves.png')}
-                style={styles.img}
-              />
+              <Image source={{uri: item.book_image}} style={styles.img} />
             </View>
             <View>
-              <Text style={styles.bookName}>Yves Saint Laurent</Text>
-              <Text style={styles.bookAuthor}>Suzy Menkes </Text>
+              <Text style={styles.bookName}>{item.title}</Text>
+              <Text style={styles.bookAuthor}>{item.author} </Text>
               <View style={styles.rating}>
                 <AirbnbRating
                   count={5}
@@ -60,11 +64,7 @@ const BookDetailsScreen = ({navigation}: any) => {
                 <Text style={styles.totalRating}>5.0</Text>
               </View>
 
-              <Text style={styles.description}>
-                A spectacular visual journey through 40 years of haute couture
-                from one of the best-known and most trend-setting brands in
-                fashion.
-              </Text>
+              <Text style={styles.description}>{item.description}</Text>
             </View>
           </View>
 
@@ -107,10 +107,10 @@ const styles = StyleSheet.create({
   },
   content: {flex: 1},
   img: {
-    height: 310,
-    width: 211.69,
+    height: hp(310),
+    width: hp(211.69),
     marginBottom: 32,
-    marginTop: 15,
+    marginTop: hp(18),
   },
   header: {
     paddingHorizontal: padding,
@@ -145,7 +145,7 @@ const styles = StyleSheet.create({
   btnSm: {
     backgroundColor: Colors.white,
     height: 40,
-    width: 154,
+    width: wp(154),
     borderRadius: 8,
 
     shadowColor: 'rgba(7, 8, 14, 0.05)',
@@ -175,8 +175,8 @@ const styles = StyleSheet.create({
   },
   btnLg: {
     backgroundColor: Colors.textBlack,
-    height: 60,
-    borderRadius: 16,
+    height: hp(60),
+    borderRadius: hp(16),
 
     shadowColor: 'rgba(7, 8, 14, 0.1)',
     shadowOffset: {

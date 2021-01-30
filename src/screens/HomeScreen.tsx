@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {
   SafeAreaView,
   StyleSheet,
@@ -6,6 +6,7 @@ import {
   Text,
   View,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 
 import {HeaderHome, BookList, PopularBook} from '../components';
@@ -13,47 +14,74 @@ import VirtualizedView from '../helpers/VirtualizedView';
 import {Colors, padding, semiBoldFont} from '../styles/global';
 
 const Home = ({navigation}: any) => {
+  const [loading, setLoading] = useState(false);
+  const [popular, setPopular] = useState([]);
+  const [newest, setNewest] = useState([]);
+  const fetchBooks = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(
+        'https://api.nytimes.com/svc/books/v3/lists/overview.json?api-key=ufpGGl8nGGrBiPO4vr9tJC3E0fhwBVzx',
+      );
+      const result = await res.json();
+      const arr: any[] = [];
+      result.results.lists.forEach((el: any) => {
+        return arr.push(...el.books);
+      });
+
+      setNewest(arr.slice(0, 10).sort());
+      setPopular(arr.slice(0, 6).sort((a, b) => a.rank - b.rank));
+
+      setLoading(false);
+    } catch (error) {
+      console.log(error);
+    }
+  };
+  useEffect(() => {
+    fetchBooks();
+  }, []);
+
   return (
     <>
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
           <HeaderHome />
         </View>
-        {/*
-        <ScrollView
-          contentInsetAdjustmentBehavior="automatic"
-          style={styles.scrollView}> */}
+
         <VirtualizedView>
           <Text style={styles.headTxt}>Popular Books</Text>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{paddingHorizontal: padding}}>
-            <PopularBook />
-            <PopularBook />
-            <PopularBook />
-            <PopularBook />
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              popular.map((el, i) => (
+                <PopularBook navigation={navigation} data={el} key={i} />
+              ))
+            )}
           </ScrollView>
           <Text style={styles.headTxt}>Newest</Text>
           <View style={{paddingHorizontal: padding}}>
-            <FlatList
-              data={[
-                {name: 'tetet', author: 'dggdgd'},
-                {name: 'tetet', author: 'dggdgd'},
-                {name: 'tetet', author: 'dggdgd'},
-                {name: 'tetet', author: 'dggdgd'},
-              ]}
-              keyExtractor={(item, index) => index.toString()}
-              renderItem={(props) => (
-                <BookList
-                  {...props}
-                  navigation={navigation}
-                  goto="BookDetails"
-                />
-              )}
-              // numColumns={1}
-              showsVerticalScrollIndicator={false}
-            />
+            {loading ? (
+              <ActivityIndicator />
+            ) : (
+              <FlatList
+                data={newest}
+                keyExtractor={(item, index) => index.toString()}
+                renderItem={(props) => (
+                  <BookList
+                    {...props}
+                    loading={loading}
+                    navigation={navigation}
+                    goto="BookDetails"
+                  />
+                )}
+                // numColumns={1}
+                showsVerticalScrollIndicator={false}
+              />
+            )}
           </View>
         </VirtualizedView>
       </SafeAreaView>

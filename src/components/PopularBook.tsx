@@ -1,39 +1,50 @@
 import React from 'react';
-import {Image, StyleSheet, Text, View} from 'react-native';
-import {Colors, regularFont, semiBoldFont} from '../styles/global';
-export interface PopularBookProps {}
+import {Image, StyleSheet, Text, View, TouchableOpacity} from 'react-native';
+import {Colors, regularFont, semiBoldFont, wp} from '../styles/global';
+export interface PopularBookProps {
+  data: any;
+  navigation: any;
+}
 
-const PopularBook: React.FunctionComponent<PopularBookProps> = () => {
+const PopularBook: React.FunctionComponent<PopularBookProps> = ({
+  data,
+  navigation,
+}) => {
+  // console.log(data);
   return (
     <View style={{paddingRight: 18}}>
-      <Image
-        source={require('./../assets/img/fashion.png')}
-        style={styles.img}
-      />
-      <Text style={styles.name}>Fashionopolis</Text>
-      <Text style={styles.author}>Dana Thomas</Text>
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => navigation.navigate('BookDetails', {item: data})}>
+        <Image source={{uri: data.book_image}} style={styles.img} />
+      </TouchableOpacity>
+
+      <Text style={styles.name}>{data.title}</Text>
+      <Text style={styles.author}>{data.author}</Text>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   img: {
-    width: 131,
-    height: 192,
+    width: wp(141),
+    height: wp(192),
   },
   name: {
     color: Colors.textBlack,
     fontFamily: semiBoldFont,
-    fontSize: 16,
+    fontSize: 14,
     marginBottom: 5,
     marginTop: 10,
-    lineHeight: 24,
+    // lineHeight: 24,
+    width: 120,
   },
   author: {
     color: Colors.textMuted,
     fontFamily: regularFont,
     fontSize: 12,
     lineHeight: 18,
+    width: 130,
   },
 });
 

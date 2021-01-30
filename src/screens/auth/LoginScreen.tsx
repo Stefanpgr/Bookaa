@@ -7,8 +7,10 @@ import {
   StyleSheet,
   TouchableOpacity,
   TextInput,
+  Alert,
 } from 'react-native';
 import FingerprintScanner from 'react-native-fingerprint-scanner';
+import * as Keychain from 'react-native-keychain';
 import {Button} from '../../components';
 
 import {Colors, hp, mediumFont, semiBoldFont, wp} from '../../styles/global';
@@ -18,35 +20,91 @@ import FingerPrint from './../../assets/svg/fingerprint.svg';
 const LoginScreen = ({navigation}: any) => {
   const [showPwd, setShowPwd] = useState(true);
   const [biometry, setBiometryType] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
 
   useEffect(() => {
-    FingerprintScanner.isSensorAvailable()
+    Keychain.getSupportedBiometryType()
       .then((biometryType) => {
-        return setBiometryType(biometryType);
+        return setBiometryType(biometryType as string);
       })
       .catch((error) => console.log('isSensorAvailable error => ', error));
+    // FingerprintScanner.isSensorAvailable()
+    //   .then((biometryType) => {
+    //     return setBiometryType(biometryType);
+    //   })
+    //   .catch((error) => console.log('isSensorAvailable error => ', error));
+    // Keychain.setGenericPassword('test@example.com', 'qwertyui', {
+    //   service: 'user-auth',
+    //   accessControl: 'BiometryAny' as any,
+    //   accessible: 'AccessibleWhenPasscodeSetThisDeviceOnly' as any,
+    // });
+    // showAuthenticationDialog();
   }, []);
 
-  const getMessage = () => {
-    if (biometry === 'Face ID') {
-      return 'Scan your Face on the device to continue';
-    } else {
-      return 'Scan your Fingerprint on the device scanner to continue';
+  const loginUser = async (result) => {
+    if (email === '' || password === '') {
+      Alert.alert('Please fill all fields');
+    }
+    const dataFromField = JSON.stringify({
+      email: email.toLowerCase(),
+      password,
+      returnSecureToken: true,
+    });
+
+    try {
+      const opt = {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: dataFromField,
+      };
+
+      const res = await fetch(
+        'https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=AIzaSyARSWpgnHfBgdZoJGlRqUrX21OPQ-qBV5U',
+        opt,
+      );
+      const result = await res.json();
+      if (res.status === 200) {
+        navigation.navigate('HomeScreen');
+        Keychain.setGenericPassword(email, password, {
+          service: 'user-auth',
+          accessControl: 'BiometryAny' as any,
+          // accessible: 'AccessibleWhenPasscodeSetThisDeviceOnly' as any,
+        });
+      } else {
+        console.log(result);
+        throw new Error('Login failed');
+      }
+    } catch (error) {
+      console.log(error);
     }
   };
 
-  const showAuthenticationDialog = () => {
-    if (biometry !== null && biometry !== undefined) {
-      FingerprintScanner.authenticate({
-        description: getMessage(),
+  const showAuthenticationDialog = async () => {
+    if (biometry !== null && biometry !== undefined && biometry !== '') {
+      Keychain.getGenericPassword({
+        service: 'user-auth',
+        authenticationPrompt: {title: 'Scan fingerprint to continue'},
       })
-        .then((res) => {
-          console.log(res);
-          navigation.navigate('HomeScreen');
-        })
-        .catch((error) => {
-          console.log('Authentication error is => ', error);
-        });
+        .then(
+          (
+            result:
+              | boolean
+              | {service: string; username: string; password: string},
+          ) => {
+            if (!result) {
+              Alert.alert('You need to login first');
+            } else {
+              console.log(result);
+              setPassword(result.password);
+              setEmail(result.username);
+            }
+          },
+        )
+        .then((result) => loginUser(result))
+        .catch((err) => console.log(err));
     } else {
       console.log('biometric authentication is not available');
     }
@@ -73,6 +131,8 @@ const LoginScreen = ({navigation}: any) => {
           keyboardType="email-address"
           placeholder="Email"
           style={styles.input}
+          onChangeText={(value) => setEmail(value)}
+          value={email}
         />
         <View style={styles.inputContainer}>
           <TextInput
@@ -82,6 +142,8 @@ const LoginScreen = ({navigation}: any) => {
             autoCorrect={false}
             secureTextEntry={showPwd}
             keyboardType="default"
+            onChangeText={(value) => setPassword(value)}
+            value={password}
           />
           <TouchableOpacity
             activeOpacity={0.5}
@@ -90,7 +152,7 @@ const LoginScreen = ({navigation}: any) => {
           </TouchableOpacity>
         </View>
         <Button
-          onPress={() => navigation.navigate('HomeScreen')}
+          onPress={() => loginUser()}
           style={styles.btnLg}
           item={<Text style={styles.btnLgTxt}>Sign in</Text>}
         />
@@ -115,7 +177,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#FDFDFD',
     borderTopRightRadius: 32,
     borderTopLeftRadius: 32,
-    padding: wp(35),
+    padding: wp(33),
   },
   welcomeTxt: {
     color: Colors.light,
@@ -135,7 +197,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 35,
     flexDirection: 'column',
     justifyContent: 'flex-end',
-    marginBottom: wp(90),
+    marginBottom: hp(90),
   },
   login: {
     fontFamily: semiBoldFont,
