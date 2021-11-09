@@ -1,6 +1,5 @@
 import React from 'react';
 import {
-  ActivityIndicator,
   Image,
   Pressable,
   StyleSheet,
@@ -8,6 +7,7 @@ import {
   View,
   TouchableOpacity,
 } from 'react-native';
+import SkeletonContent from 'react-native-skeleton-content-nonexpo';
 // import { TouchableOpacity } from 'react-native-gesture-handler';
 
 import {AirbnbRating} from 'react-native-ratings';
@@ -22,21 +22,25 @@ export interface BookListProps {
 
 const BookList: React.FunctionComponent<BookListProps> = ({
   navigation,
-  goto,
   item,
   loading,
 }) => {
   return (
     <View style={styles.flexRow}>
-      <Pressable
-        onPress={() =>
-          navigation.navigate('BookDetails', {
-            item,
-          })
-        }>
-        <Image source={{uri: item.book_image}} style={styles.img} />
-      </Pressable>
-
+      <SkeletonContent
+        containerStyle={styles.img}
+        isLoading={loading}
+        animationDirection="horizontalRight"
+        layout={[{...styles.img}]}>
+        <Pressable
+          onPress={() =>
+            navigation.navigate('BookDetails', {
+              item,
+            })
+          }>
+          <Image source={{uri: item.book_image}} style={styles.img} />
+        </Pressable>
+      </SkeletonContent>
       <TouchableOpacity
         onPress={() => {
           navigation.navigate('BookDetails', {
@@ -44,12 +48,25 @@ const BookList: React.FunctionComponent<BookListProps> = ({
           });
         }}
         style={styles.bookDetails}>
-        <View>
-          <Text style={styles.name}>{item.title}</Text>
+        <SkeletonContent
+          containerStyle={styles.name}
+          isLoading={loading}
+          animationDirection="horizontalRight"
+          layout={[
+            {key: 'text1', height: 20, width: 140, marginBottom: 15},
+            {key: 'text2', height: 20, width: 70},
+          ]}>
+          <Text style={styles.name} numberOfLines={1}>
+            {item.title}
+          </Text>
           <Text style={styles.author}>{item.author} </Text>
-        </View>
-
-        <View style={{alignSelf: 'flex-start', paddingBottom: hp(5)}}>
+        </SkeletonContent>
+        <SkeletonContent
+          containerStyle={{alignSelf: 'flex-start', paddingBottom: hp(5)}}
+          isLoading={loading}
+          animationDirection="horizontalRight"
+          layout={[{key: 'text1', height: 20, width: 140}]}>
+          {/* <View style={{alignSelf: 'flex-start', paddingBottom: hp(5)}}> */}
           <AirbnbRating
             count={5}
             defaultRating={item.rank}
@@ -58,10 +75,11 @@ const BookList: React.FunctionComponent<BookListProps> = ({
             selectedColor="#FFC41F"
             isDisabled
           />
-        </View>
+          {/* </View> */}
+        </SkeletonContent>
       </TouchableOpacity>
       <View style={{paddingLeft: 20}}>
-        <BookMark fill="#06070D" />
+        {!loading && <BookMark fill="#06070D" />}
       </View>
     </View>
   );

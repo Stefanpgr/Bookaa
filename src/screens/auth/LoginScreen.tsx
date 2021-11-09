@@ -34,15 +34,15 @@ const LoginScreen = ({navigation}: any) => {
     //     return setBiometryType(biometryType);
     //   })
     //   .catch((error) => console.log('isSensorAvailable error => ', error));
-    // Keychain.setGenericPassword('test@example.com', 'qwertyui', {
-    //   service: 'user-auth',
-    //   accessControl: 'BiometryAny' as any,
-    //   accessible: 'AccessibleWhenPasscodeSetThisDeviceOnly' as any,
-    // });
+    Keychain.setGenericPassword('test@example.com', 'qwertyui', {
+      service: 'user-auth',
+      accessControl: Keychain.ACCESS_CONTROL.BIOMETRY_CURRENT_SET as any,
+      accessible: Keychain.ACCESSIBLE.WHEN_PASSCODE_SET_THIS_DEVICE_ONLY as any,
+    });
     // showAuthenticationDialog();
   }, []);
 
-  const loginUser = async (result) => {
+  const loginUser = async () => {
     if (email === '' || password === '') {
       Alert.alert('Please fill all fields');
     }
@@ -66,48 +66,26 @@ const LoginScreen = ({navigation}: any) => {
         opt,
       );
       const result = await res.json();
-      if (res.status === 200) {
-        navigation.navigate('HomeScreen');
-        Keychain.setGenericPassword(email, password, {
-          service: 'user-auth',
-          accessControl: 'BiometryAny' as any,
-          // accessible: 'AccessibleWhenPasscodeSetThisDeviceOnly' as any,
-        });
+      if (result.status === 200) {
+        navigation.replace('HomeScreen');
       } else {
-        console.log(result);
-        throw new Error('Login failed');
+        Alert.alert('Error', 'Login failed.');
       }
     } catch (error) {
       console.log(error);
     }
+    // navigation.replace('HomeScreen');
   };
 
   const showAuthenticationDialog = async () => {
-    if (biometry !== null && biometry !== undefined && biometry !== '') {
-      Keychain.getGenericPassword({
-        service: 'user-auth',
-        authenticationPrompt: {title: 'Scan fingerprint to continue'},
-      })
-        .then(
-          (
-            result:
-              | boolean
-              | {service: string; username: string; password: string},
-          ) => {
-            if (!result) {
-              Alert.alert('You need to login first');
-            } else {
-              console.log(result);
-              setPassword(result.password);
-              setEmail(result.username);
-            }
-          },
-        )
-        .then((result) => loginUser(result))
-        .catch((err) => console.log(err));
-    } else {
-      console.log('biometric authentication is not available');
-    }
+    Keychain.getGenericPassword({
+      service: 'user-auth',
+      authenticationPrompt: {
+        title: 'Scan fingerprint to continue',
+      },
+    })
+      .then(() => navigation.replace('HomeScreen'))
+      .catch((err) => console.log(err));
   };
 
   return (

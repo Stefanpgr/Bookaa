@@ -6,7 +6,6 @@ import {
   Text,
   View,
   FlatList,
-  ActivityIndicator,
 } from 'react-native';
 
 import {HeaderHome, BookList, PopularBook} from '../components';
@@ -15,8 +14,8 @@ import {Colors, padding, semiBoldFont} from '../styles/global';
 
 const Home = ({navigation}: any) => {
   const [loading, setLoading] = useState(false);
-  const [popular, setPopular] = useState([]);
-  const [newest, setNewest] = useState([]);
+  const [popular, setPopular] = useState<any[]>([{}, {}, {}, {}]);
+  const [newest, setNewest] = useState<any[]>([{}, {}, {}, {}]);
   const fetchBooks = async () => {
     try {
       setLoading(true);
@@ -54,34 +53,32 @@ const Home = ({navigation}: any) => {
             horizontal
             showsHorizontalScrollIndicator={false}
             contentContainerStyle={{paddingHorizontal: padding}}>
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              popular.map((el, i) => (
-                <PopularBook navigation={navigation} data={el} key={i} />
-              ))
-            )}
+            {popular.map((el, i) => (
+              <PopularBook
+                navigation={navigation}
+                data={el}
+                key={i}
+                loading={loading}
+              />
+            ))}
           </ScrollView>
           <Text style={styles.headTxt}>Newest</Text>
           <View style={{paddingHorizontal: padding}}>
-            {loading ? (
-              <ActivityIndicator />
-            ) : (
-              <FlatList
-                data={newest}
-                keyExtractor={(item, index) => index.toString()}
-                renderItem={(props) => (
-                  <BookList
-                    {...props}
-                    loading={loading}
-                    navigation={navigation}
-                    goto="BookDetails"
-                  />
-                )}
-                // numColumns={1}
-                showsVerticalScrollIndicator={false}
-              />
-            )}
+            <FlatList
+              data={newest}
+              // contentContainerStyle={{marginBottom: hp(2000)}}
+              keyExtractor={(item, index) => index.toString()}
+              renderItem={(props) => (
+                <BookList
+                  {...props}
+                  loading={loading}
+                  navigation={navigation}
+                  goto="BookDetails"
+                />
+              )}
+              // numColumns={1}
+              showsVerticalScrollIndicator={false}
+            />
           </View>
         </VirtualizedView>
       </SafeAreaView>
